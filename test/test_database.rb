@@ -117,6 +117,19 @@ module TestDatabase
     assert !User.group_by_day(:created_at).respond_to?(:no_such_method)
   end
 
+  def test_column_with_upper_case
+    # postgres automatically lowercases fields unless told not to.
+    # this tests ensures that fields with uppercase letters are respected.
+    create_user "#{this_year - 3}-01-01"
+    create_user "#{this_year - 1}-01-01"
+    expected = {
+      Date.parse("#{this_year - 2}-01-01") => 0,
+      Date.parse("#{this_year - 1}-01-01") => 1,
+      Date.parse("#{this_year}-01-01") => 0
+    }
+    assert_equal expected, User.group_by_year(:camelCaseAt, last: 3).count
+  end
+
   def test_last
     create_user "#{this_year - 3}-01-01"
     create_user "#{this_year - 1}-01-01"

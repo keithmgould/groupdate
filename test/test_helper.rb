@@ -48,6 +48,7 @@ def create_tables
     t.string :name
     t.integer :score
     t.timestamp :created_at
+    t.timestamp :camelCaseAt
     t.date :created_on
   end
 

@@ -65,19 +65,19 @@ module Groupdate
         when "PostgreSQL", "PostGIS"
           case period
           when :day_of_week
-            ["EXTRACT(DOW from #{column}::timestamptz AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(DOW from CAST (\"#{column}\" AS timestamptz) AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
           when :hour_of_day
-            ["EXTRACT(HOUR from #{column}::timestamptz AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(HOUR from CAST (\"#{column}\" AS timestamptz) AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
           when :minute_of_hour
-            ["EXTRACT(MINUTE from #{column}::timestamptz AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(MINUTE from CAST (\"#{column}\" AS timestamptz) AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
           when :day_of_month
-            ["EXTRACT(DAY from #{column}::timestamptz AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(DAY from CAST (\"#{column}\" AS timestamptz) AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
           when :month_of_year
-            ["EXTRACT(MONTH from #{column}::timestamptz AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(MONTH from CAST (\"#{column}\" AS timestamptz) AT TIME ZONE ? - INTERVAL '#{day_start} second')::integer", time_zone]
           when :week # start on Sunday, not PostgreSQL default Monday
-            ["(DATE_TRUNC('#{period}', (#{column}::timestamptz - INTERVAL '#{week_start} day' - INTERVAL '#{day_start} second') AT TIME ZONE ?) + INTERVAL '#{week_start} day' + INTERVAL '#{day_start} second') AT TIME ZONE ?", time_zone, time_zone]
+            ["(DATE_TRUNC('#{period}', (CAST (\"#{column}\" AS timestamptz) - INTERVAL '#{week_start} day' - INTERVAL '#{day_start} second') AT TIME ZONE ?) + INTERVAL '#{week_start} day' + INTERVAL '#{day_start} second') AT TIME ZONE ?", time_zone, time_zone]
           else
-            ["(DATE_TRUNC('#{period}', (#{column}::timestamptz - INTERVAL '#{day_start} second') AT TIME ZONE ?) + INTERVAL '#{day_start} second') AT TIME ZONE ?", time_zone, time_zone]
+            ["(DATE_TRUNC('#{period}', (CAST (\"#{column}\" AS timestamptz) - INTERVAL '#{day_start} second') AT TIME ZONE ?) + INTERVAL '#{day_start} second') AT TIME ZONE ?", time_zone, time_zone]
           end
         when "SQLite"
           raise Groupdate::Error, "Time zones not supported for SQLite" unless @time_zone.utc_offset.zero?
@@ -168,9 +168,9 @@ module Groupdate
     def where_clause
       if @time_range.is_a?(Range)
         # doesn't matter whether we include the end of a ... range - it will be excluded later
-        ["#{column} >= ? AND #{column} <= ?", @time_range.first, @time_range.last]
+        ["\"#{column}\" >= ? AND \"#{column}\" <= ?", @time_range.first, @time_range.last]
       else
-        ["#{column} IS NOT NULL"]
+        ["\"#{column}\" IS NOT NULL"]
       end
     end
   end
